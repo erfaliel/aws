@@ -391,6 +391,9 @@ Resources:
           - AWSInstanceType2Arch
           - Ref: InstanceType
           - Arch
+      Tags:
+       - Key: Name
+         Value: Bastion_instance
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -404,6 +407,9 @@ Resources:
           CidrIp:
             Ref: SSHLocation
       VpcId: vpc-fcf6bf9b
+      Tags:
+        - Key: Name
+          Value: SG-Bastion-Instance
 Outputs:
   InstanceId:
     Description: InstanceId of the newly created EC2 instance
