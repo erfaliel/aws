@@ -377,7 +377,7 @@ Resources:
     Properties:
       InstanceType:
         Ref: InstanceType
-      SecurityGroups:
+      SecurityGroupIds:
         - Ref: InstanceSecurityGroup
       KeyName:
         Ref: KeyName
