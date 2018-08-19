@@ -376,7 +376,7 @@ Mappings:
       HVM64: ami-3e60745c
       HVMG2: NOT_SUPPORTED
 Resources:
-  EC2Instance:
+  BastionEC2:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType:
@@ -408,13 +408,13 @@ Resources:
           CidrIp: MyCidrIP
           FromPort: '22'
           ToPort: '22'
-          CidrIp:
-            Ref: SSHLocation
+          #CidrIp:
+          #  Ref: SSHLocation
       VpcId: vpc-fcf6bf9b
       Tags:
         - Key: Name
           Value: SG-Bastion-Instance
-  EC2Instance:
+  NatEC2:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType:
@@ -433,9 +433,10 @@ Resources:
           - AWSInstanceType2Arch
           - Ref: InstanceType
           - Arch
+      SourceDestCheck: false # because NAT EC2
       Tags:
        - Key: Name
-         Value: Bastion_instance
+         Value: NAT_instance
 
   NatSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -443,12 +444,24 @@ Resources:
       GroupName: myNAT_Security_Group
       GroupDescription: Enable all traffic access from our private subnet
       SecurityGroupIngress:
-        - IpProtocol: all
-          CidrIp: '10.50.1.0/24'
-          FromPort: '0'
-          ToPort: '65535'
+        - IpProtocol: tcp 
+          CidrIp: '10.28.1.0/24'
+          FromPort: '80'
+          ToPort: '80'
           CidrIp:
             Ref: SSHLocation
+        - IpProtocol: tcp
+          CidrIp: '10.28.1.0/24'
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp:
+            Ref: SSHLocation
+        - IpProtocol: tcp
+          CidrIp: MyCidrIP
+          FromPort: '22'
+          ToPort: '22'
+          #CidrIp:
+          #  Ref: SSHLocation
       VpcId: vpc-fcf6bf9b
       Tags:
         - Key: Name
@@ -458,22 +471,26 @@ Outputs:
   InstanceId:
     Description: InstanceId of the newly created EC2 instance
     Value:
-      Ref: EC2Instance
+      Ref: BastionEC2
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value:
+      Ref: NatEC2
   AZ:
     Description: Availability Zone of the newly created EC2 instance
     Value:
       Fn::GetAtt:
-      - EC2Instance
+      - BastionEC2
       - AvailabilityZone
   PublicDNS:
     Description: Public DNSName of the newly created EC2 instance
     Value:
       Fn::GetAtt:
-      - EC2Instance
+      - BastionEC2
       - PublicDnsName
   PublicIP:
     Description: Public IP address of the newly created EC2 instance
     Value:
       Fn::GetAtt:
-      - EC2Instance
+      - BastionEC2
       - PublicIp
